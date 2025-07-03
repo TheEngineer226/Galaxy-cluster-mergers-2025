@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
 
-ds = yt.load("./sims_data/R1.5_v2400_b250/Data_000000")
+ds = yt.load("../sims_data/R1.5_v2400_b250/Data_000000")
 
 sc = yt.create_scene(ds, lens_type="perspective")
 
