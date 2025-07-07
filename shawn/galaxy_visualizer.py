@@ -2,9 +2,10 @@ import numpy as np
 import yt
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import os
 
 
-ds = yt.load("../sims_data/R1.5_v2400_b250/Data_000000")
+ds = yt.load("./sims_data/R1.5_v2400_b250/Data_000000")
 
 sc = yt.create_scene(ds, lens_type="perspective")
 
@@ -31,12 +32,17 @@ tf.map_to_colormap(
 source.tfh.tf = tf
 source.tfh.bounds = bounds
 
-source.tfh.plot("transfer_function.png", profile_field=("gas", "density"))
+source.tfh.plot("./shawn/transfer_function.png", profile_field=("gas", "density"))
 
-sc.save("rendering.png", sigma_clip=6)
+sc.save("./shawn/rendering.png", sigma_clip=6)
 
 
-img = mpimg.imread("shawn/rendered_output.png")
+img = mpimg.imread("./shawn/rendering.png")
 plt.imshow(img)
 plt.axis('off')
 plt.show()
+
+try:
+	os.remove("./shawn/rendering.png")
+except:
+	print("An error has occured")
