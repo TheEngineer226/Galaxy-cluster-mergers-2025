@@ -32,17 +32,17 @@ tf.map_to_colormap(
 source.tfh.tf = tf
 source.tfh.bounds = bounds
 
-source.tfh.plot("./shawn/transfer_function.png", profile_field=("gas", "density"))
+source.tfh.plot("shawn/transfer_function.png", profile_field=("gas", "density"))
 
-sc.save("./shawn/rendering.png", sigma_clip=6)
+sc.save("shawn/rendering.png", sigma_clip=6)
 
 
-img = mpimg.imread("./shawn/rendering.png")
+img = mpimg.imread("shawn/rendering.png")
 plt.imshow(img)
 plt.axis('off')
 plt.show()
 
 try:
-	os.remove("./shawn/rendering.png")
+	os.remove("shawn/rendering.png")
 except:
 	print("An error has occured")
