@@ -1,14 +1,9 @@
-# Read Me
-"""
-Nothing yet
-"""
-
-
 # imports
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import yt
 from unyt import unyt_array
+import numpy as np
 
 
 # Dictionary of default parameters
