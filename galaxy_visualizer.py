@@ -15,7 +15,8 @@ from unyt import unyt_array
 DEFAULT_PARAMETERS = {
      "data_location" : "sims_data/R1.5_v2400_b250/Data_000044",
      "sphere_radius" :  3,
-     "sphere_radius_units" : 'Mpc'
+     "sphere_radius_units" : "Mpc",
+     "field" : ("gas", "density")
       }
 
 
@@ -46,7 +47,7 @@ def setup_source_properties(source, field: tuple, is_log: bool, is_grey_opacity:
 
 
 # Loads in and volume renders galaxy data, then volume renders them
-def main(data = DEFAULT_PARAMETERS['data_location'], sphere_radius = DEFAULT_PARAMETERS['sphere_radius'], sphere_radius_units = DEFAULT_PARAMETERS['sphere_radius_units']):
+def main(data = DEFAULT_PARAMETERS['data_location'], sphere_radius = DEFAULT_PARAMETERS['sphere_radius'], sphere_radius_units = DEFAULT_PARAMETERS['sphere_radius_units'], field = DEFAULT_PARAMETERS['field']):
     ds = yt.load(data)
 
     # get CoM from particles (DM and stars) ------------------------------------------------------------
@@ -71,14 +72,14 @@ def main(data = DEFAULT_PARAMETERS['data_location'], sphere_radius = DEFAULT_PAR
 
     plt.figure(figsize=(10, 5))
 
-    sc = yt.create_scene(sp, field=("gas", "density"), lens_type='perspective')
+    sc = yt.create_scene(sp, field=field, lens_type='perspective')
     source = sc[0]
 
     bounds = (3e-31, 5e-27)
 
-    setup_source_properties(source, ("gas", "total_density"), True, True, False, bounds)
-    save_and_show_img("shawn/density_transfer_function.png", 0, (1, 2, 1), "Transfer Function Density", True, ("gas", "density"), source = source)
-    save_and_show_img("shawn/density_rendering.png", 6, (1, 2, 2), "Rendered Scene Density", False, scene = sc)
+    setup_source_properties(source, field, True, True, False, bounds)
+    save_and_show_img("density_transfer_function.png", 0, (1, 2, 1), "Transfer Function Density", True, field, source = source)
+    save_and_show_img("density_rendering.png", 6, (1, 2, 2), "Rendered Scene Density", False, scene = sc)
 
     plt.tight_layout()
     plt.show()
@@ -86,3 +87,6 @@ def main(data = DEFAULT_PARAMETERS['data_location'], sphere_radius = DEFAULT_PAR
 
 if __name__ == "__main__":
         main()
+
+
+
