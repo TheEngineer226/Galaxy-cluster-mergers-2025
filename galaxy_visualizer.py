@@ -1,18 +1,41 @@
 # imports
+import yt
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-import yt
 from unyt import unyt_array
 import numpy as np
 
 
-# Dictionary of default parameters
+# Dictionary of the default parameters
 DEFAULT_PARAMETERS = {
      "data_location" : "sims_data/R1.5_v2400_b250/Data_000044",
      "sphere_radius" :  3,
      "sphere_radius_units" : "Mpc",
      "field" : ("gas", "density")
       }
+
+
+# Returns the CoM from all the particles (DM and stars)
+def find_CoM(dataset):
+    ad = dataset.all_data()
+    com_x = ad.mean(('io', 'particle_position_x'))
+    com_y = ad.mean(('io', 'particle_position_y'))
+    com_z = ad.mean(('io', 'particle_position_z'))
+    return unyt_array([com_x, com_y, com_z], com_x.units)
+
+
+def _total_density(field, data):
+    return data['gas', 'density'] + data['gas', 'particle_density_on_grid']
+
+
+# Sets up the source
+def setup_source_properties(source, field: tuple, is_log: bool, is_grey_opacity: bool, use_ghost_zones: bool, bounds: tuple = None):
+    source.tfh.set_field(field)
+    source.set_log(is_log)
+    source.grey_opacity = is_grey_opacity
+    source.set_use_ghost_zones(use_ghost_zones) #Looks better but way slower
+    if bounds:
+        source.tfh.set_bounds(bounds)
 
 
 # Saves the rendering and then utilizes Matplotlib to display the render 
@@ -31,39 +54,21 @@ def save_and_show_img(file_location: str, s_clip: float, subplot_cords: tuple, t
     plt.title(title)
 
 
-# Sets up the source
-def setup_source_properties(source, field: tuple, is_log: bool, is_grey_opacity: bool, use_ghost_zones: bool, bounds: tuple = None):
-    source.tfh.set_field(field)
-    source.set_log(is_log)
-    source.grey_opacity = is_grey_opacity
-    source.set_use_ghost_zones(use_ghost_zones) #looks better but way slower
-    if bounds:
-        source.tfh.set_bounds(bounds)
-
-
 # Loads in and volume renders galaxy data, then volume renders them
-def main(data = DEFAULT_PARAMETERS['data_location'], sphere_radius = DEFAULT_PARAMETERS['sphere_radius'], sphere_radius_units = DEFAULT_PARAMETERS['sphere_radius_units'], field = DEFAULT_PARAMETERS['field']):
+def main(data: str = DEFAULT_PARAMETERS['data_location'], sphere_radius: float = DEFAULT_PARAMETERS['sphere_radius'], sphere_radius_units: str = DEFAULT_PARAMETERS['sphere_radius_units'], field: tuple = DEFAULT_PARAMETERS['field']):
     ds = yt.load(data)
 
-    # get CoM from particles (DM and stars) ------------------------------------------------------------
-    ad = ds.all_data()
-    com_x = ad.mean(('io', 'particle_position_x'))
-    com_y = ad.mean(('io', 'particle_position_y'))
-    com_z = ad.mean(('io', 'particle_position_z'))
-    c = unyt_array([com_x, com_y, com_z], com_x.units)
+    # Gets CoM from particles (DM and stars) ------------------------------------------------------------
+    c = find_CoM(dataset = ds)
 
-    # how to just look at gas/particles within a sphere (not full simulation domain) -------------------
+    # Look at gas/particles within a sphere (not full simulation domain) -------------------
     radius = (sphere_radius, sphere_radius_units)
     sp = ds.sphere(c, radius) # c = CoM defined above, Tuple is required here as parameter
-
-    # add a field for the total (DM + stars + gas) density
-    def _total_density(field, data):
-        return data['gas', 'density'] + data['gas', 'particle_density_on_grid']
 
     ds.add_field(('gas', 'total_density'), _total_density, units='g/cm**3', sampling_type='local')
 
     #total_density_in_sphere = sp[('gas', 'total_density')]  # Will probably be used in the future but not sure just yet
-    #temperature_in_sphere = sp[('gas', 'temperature')]  # same as above
+    #temperature_in_sphere = sp[('gas', 'temperature')]  # Same as above
 
     plt.figure(figsize=(10, 5))
 
@@ -72,16 +77,14 @@ def main(data = DEFAULT_PARAMETERS['data_location'], sphere_radius = DEFAULT_PAR
 
     bounds = (3e-31, 5e-27)
 
-    setup_source_properties(source, field, True, True, False, bounds)
+    setup_source_properties(source = source, field = field, is_log = True, is_grey_opacity = True, use_ghost_zones = False, bounds = bounds)
     save_and_show_img("density_transfer_function.png", 0, (1, 2, 1), "Transfer Function Density", True, field, source = source)
     save_and_show_img("density_rendering.png", 6, (1, 2, 2), "Rendered Scene Density", False, scene = sc)
 
+    # Ensures labels and titles don't overlap
     plt.tight_layout()
     plt.show()
 
 
 if __name__ == "__main__":
         main()
-
-
-
