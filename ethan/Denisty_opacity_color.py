@@ -59,9 +59,6 @@ def main(data: str = DEFAULT_PARAMETERS['data_location'], sphere_radius: float =
     user_prefix = input("Enter your username (for saving images to a folder): ").strip()
     if not user_prefix.endswith('/'):
         user_prefix += '/'
-    if not os.path.isdir(user_prefix):
-        os.makedirs(user_prefix)
-        print(f"Created directory: {user_prefix}")
 
     # Load the dataset and define region
     ds = yt.load(data)
