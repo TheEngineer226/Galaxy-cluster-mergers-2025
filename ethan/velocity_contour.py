@@ -65,14 +65,21 @@ def generate_velocity_slice(data_path, radius, radius_units):
     com_z = ad.mean(('io', 'particle_position_z'))
     center = unyt_array([com_x, com_y, com_z], com_x.units)
 
-    # Make a 2D slice colored by velocity magnitude
+# Make a 2D slice colored by velocity magnitude
     slc = yt.SlicePlot(ds, 'z', ('gamer', 'velocity_magnitude'), center=center)
     slc.set_cmap(('gamer', 'velocity_magnitude'), 'turbo')
 
-    # Annotate with streamlines for flow direction and contours for density
+# --- Recommended Changes for a Clearer Image ---
+# 1. Set the plot to use a logarithmic scale for velocity
+    slc.set_log(('gamer', 'velocity_magnitude'), True)
+
+# 2. Set the data limits to focus on the interesting velocity range (in cm/s)
+# This ignores the noisy data below 10^6 cm/s (10 km/s)
+    slc.set_zlim(('gamer', 'velocity_magnitude'), 1e6, 3e8)
+# ---
+
+# Annotate with streamlines for flow direction and contours for density
     slc.annotate_streamlines(("gamer", "velocity_x"), ("gamer", "velocity_y"), factor=8)
-    
-    # CORRECTED: The 'cmap' argument is removed.
     slc.annotate_contour(("gas", "density"), ncont=8, clim=(1e-29, 1e-26))
 
     # Save and display image
