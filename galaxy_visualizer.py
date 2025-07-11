@@ -1,5 +1,6 @@
 # imports
 import yt
+import os
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from unyt import unyt_array
@@ -56,8 +57,18 @@ def save_and_show_img(file_location: str, s_clip: float, subplot_cords: tuple, t
 
 # Loads in and volume renders galaxy data, then volume renders them
 def main(data: str = DEFAULT_PARAMETERS['data_location'], sphere_radius: float = DEFAULT_PARAMETERS['sphere_radius'], sphere_radius_units: str = DEFAULT_PARAMETERS['sphere_radius_units'], field: tuple = DEFAULT_PARAMETERS['field']):
-    ds = yt.load(data)
+    user_prefix = input("Enter your username (for saving images to a folder): ").strip() + "/"
+    import os
 
+    user_prefix = input("Enter your username (for saving images to a folder): ").strip() + "/"
+    if not os.path.isdir(user_prefix):
+        raise FileNotFoundError(f"The folder '{user_prefix}' does not exist. Please make sure your folder is created.")
+
+     
+     
+     
+
+    ds = yt.load(data)
     # Gets CoM from particles (DM and stars) ------------------------------------------------------------
     c = find_CoM(dataset = ds)
 
@@ -78,8 +89,8 @@ def main(data: str = DEFAULT_PARAMETERS['data_location'], sphere_radius: float =
     bounds = (3e-31, 5e-27)
 
     setup_source_properties(source = source, field = field, is_log = True, is_grey_opacity = True, use_ghost_zones = False, bounds = bounds)
-    save_and_show_img("density_transfer_function.png", 0, (1, 2, 1), "Transfer Function Density", True, field, source = source)
-    save_and_show_img("density_rendering.png", 6, (1, 2, 2), "Rendered Scene Density", False, scene = sc)
+    save_and_show_img(user_prefix + "density_transfer_function.png", 0, (1, 2, 1), "Transfer Function Density", True, field, source = source)
+    save_and_show_img(user_prefix + "density_rendering.png", 6, (1, 2, 2), "Rendered Scene Density", False, scene = sc)
 
     # Ensures labels and titles don't overlap
     plt.tight_layout()
