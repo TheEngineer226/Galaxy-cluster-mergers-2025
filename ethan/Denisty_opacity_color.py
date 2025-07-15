@@ -1,5 +1,4 @@
-import yt
-import os
+import yt, os
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from unyt import unyt_array
