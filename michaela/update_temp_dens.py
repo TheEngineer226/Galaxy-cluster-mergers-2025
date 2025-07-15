@@ -6,7 +6,7 @@ from yt.visualization.volume_rendering.api import Scene, create_volume_source
 from yt.visualization.volume_rendering.transfer_functions import TransferFunction, MultiVariateTransferFunction, ColorTransferFunction
 
 # Load dataset
-ds = yt.load("sims_data/R1.5_v2400_b250/Data_000000")
+ds = yt.load("sims_data/R1.5_v2400_b250/Data_000044")
 
 # Define a derived field: temperature weighted by density
 def temp_density_weighted(field, data):
