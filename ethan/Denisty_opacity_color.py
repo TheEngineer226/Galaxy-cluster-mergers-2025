@@ -22,7 +22,7 @@ def find_CoM(dataset):
     com_z = ad.mean(('io', 'particle_position_z'))
     return unyt_array([com_x, com_y, com_z], com_x.units)
 
-
+"""
 def _total_density(field, data):
     return data['gas', 'density'] + data['gas', 'particle_density_on_grid']
 
@@ -35,7 +35,7 @@ def setup_source_properties(source, field: tuple, is_log: bool, is_grey_opacity:
     source.set_use_ghost_zones(use_ghost_zones) #Looks better but way slower
     if bounds:
         source.tfh.set_bounds(bounds)
-
+"""
 
 # Saves the rendering and then utilizes Matplotlib to display the render 
 # Saving images should pass in a VolumeSource, Transfer Functions should pass in scene 
@@ -73,7 +73,7 @@ def main(data: str = DEFAULT_PARAMETERS['data_location'], sphere_radius: float =
 
     # 2. Define the data bounds and set the rendering to log scale
     source.set_log(True)
-    bounds = (10e-29, 5e-26)
+    bounds = (10e-30, 5e-26)
     log_bounds = np.log10(bounds)
 
     # 3. Create a ColorTransferFunction object in log space
@@ -81,12 +81,14 @@ def main(data: str = DEFAULT_PARAMETERS['data_location'], sphere_radius: float =
 
     # 4. Define a function that maps data values to alpha (opacity) values.
     # This function creates a linear ramp for opacity.
+
     def alpha_func(vals, min_val, max_val):
         # Linearly map values from their range [min_val, max_val]
         # to a new range of [0.0 (transparent), 1.0 (opaque)]
         return (vals - min_val) / (max_val - min_val)
 
-    # 5. Use map_to_colormap to apply the colormap and opacity scale in one step.
+
+    # 5. Use map_to_colormap, but WITHOUT the scale_func argument.
     tf.map_to_colormap(
         log_bounds[0],
         log_bounds[1],
