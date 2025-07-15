@@ -74,7 +74,7 @@ def main(data: str = DEFAULT_PARAMETERS['data_location'], sphere_radius: float =
 
     # 2. Define the data bounds and set the rendering to log scale
     source.set_log(True)
-    bounds = (3e-30, 5e-26)
+    bounds = (10e-29, 5e-26)
     log_bounds = np.log10(bounds)
 
     # 3. Create a ColorTransferFunction object in log space
