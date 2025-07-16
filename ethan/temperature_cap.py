@@ -54,7 +54,7 @@ def main(data: str = DEFAULT_PARAMETERS['data_location'], sphere_radius: float =
     ds = yt.load(data)
     
     # --- CORRECTED: Define the cap_temperature with units using ds.quan() ---
-    cap_temperature = ds.quan(10**7.0, "K") # Sets the temperature where the colormap maxes out.
+    cap_temperature = ds.quan((2.5*10**8.0), "K") # Sets the temperature where the colormap maxes out.
     
     if base_temperature_field not in ds.field_list:
         def _temperature(field, data):
@@ -88,7 +88,7 @@ def main(data: str = DEFAULT_PARAMETERS['data_location'], sphere_radius: float =
     tf.map_to_colormap(
         log_temp_bounds[0],
         log_temp_bounds[1],
-        colormap="viridis",
+        colormap="turbo",
         scale_func=alpha_func
     )
 
