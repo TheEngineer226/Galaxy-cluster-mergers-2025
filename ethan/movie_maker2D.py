@@ -13,7 +13,7 @@ DEFAULT_PARAMETERS = {
 # --- Movie Control Parameters ---
 output_dir = "frames_2d_movie/" # A dedicated folder for these new frames
 start_frame = 0    # The first data file number to use
-end_frame = 101     # The data file number to stop BEFORE (will render up to 49)
+end_frame = 500     # The data file number to stop BEFORE (will render up to 49)
 frame_step = 2     # The step size (1 = every frame, 2 = every other frame)
 
 
