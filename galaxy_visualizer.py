@@ -9,67 +9,89 @@ import numpy as np
 import cmasher as cmr
 
 
+# Maps data values to alpha (opacity) values.
+# This function creates a linear ramp for opacity.
+def slanted_alpha_func(vals, min_val, max_val):
+    # Linearly map values from their range [min_val, max_val]
+    # to a new range of [0.0 (transparent), 1.0 (opaque)]
+    return (vals - min_val) / (max_val - min_val)
+
+def flat_alpha_func(vals, min_val, max_val, alpha=1.0):
+    # Returns a constant alpha value for all inputs
+    return np.full_like(vals, fill_value=alpha, dtype=float)
+
+def centered_alpha_func(vals, min_val, max_val):
+    mid = 0.5 * (min_val + max_val)
+    half_range = 0.5 * (max_val - min_val)
+    return 1.0 - np.abs(vals - mid) / half_range
+
+def inverted_centered_alpha_func(vals, min_val, max_val):
+    mid = 0.5 * (min_val + max_val)
+    half_range = 0.5 * (max_val - min_val)
+    return np.abs(vals - mid) / half_range
+
+def alpha_zero_at_zero(vals, min_val, max_val):
+    return np.clip(np.abs(vals) / max(abs(min_val), abs(max_val)), 0.0, 1.0)
+
+
 # The parameters pass for each field
 field_parameters = [
     {
         "field" : ("gas", "density"),
-        "bounds" : [("percentile", 5), ("percentile", 100)], # Use "percentile" to get a percentile and "value" when you want to direct put in a value for the bound. (smallest, largest)
-        "use_grey_opacity" : False, # Make underdense regions appear opaque
+        # Use "percentile" to get a percentile and "value" when you want to direct put in a value for the bound. 
+        # "min" gives you the smallest number and "max" gives you the biggest(smallest, largest)
+        "bounds" : [("value", 5e-29), ("max", None)], 
+        "use_grey_opacity" : True, # Make underdense regions appear opaque
         "use_ghost_zones" : False, # Uses interpolated data around grid boundaries to smooth out visual artifacts. But will come at the cost of performance
         "colormap" : "turbo", 
+        "alpha_function" : slanted_alpha_func,
         "use_log_space" : True, 
         "file_location" : "shawn/", # The path to the folder you want the file to be saved at
         "label" : "Density", 
-        "sigma_clip" : 6, # Removing values that are more than N standard deviations brighter than the mean of your image. Typically, a choice of 4 to 6.
-        "interpolation" : "nearest" # "nearest" has no smoothing, "billinear" makes it smoother at the cost of performance
+        "sigma_clip" : 5, # Removing values that are more than N standard deviations brighter than the mean of your image. Typically, a choice of 4 to 6.
+        "interpolation" : "bilinear" # "nearest" has no smoothing, "billinear" makes it smoother
     },
     {
         "field" : ("gas", "temperature"),
-        "bounds" : [("percentile", 5), ("value", 2.6e8)], 
-        "use_grey_opacity" : False, 
+        "bounds" : [("percentile", 5), ("percentile", 99.7)],  
+        "use_grey_opacity" : True, 
         "use_ghost_zones" : False, 
         "colormap" : "cmr.viola",
+        "alpha_function" : slanted_alpha_func,
         "use_log_space" : False,
         "file_location" : "shawn/", 
         "label" : "Temperature", 
         "sigma_clip" : 6, 
-        "interpolation" : "nearest"
+        "interpolation" : "bilinear"
     },
     {
-        "field" : ("gamer", "velocity_magnitude"),
-        "bounds" : [("percentile", 5), ("percentile", 100)],
-        "use_grey_opacity" : False, 
+        "field" : ("gamer", "signed_velocity"),
+        "bounds" : [("min", None), ("max", None)],
+        "use_grey_opacity" : True, 
         "use_ghost_zones" : False, 
         "colormap" : "cmr.prinsenvlag_r",
-        "use_log_space" : True,
+        "alpha_function" : inverted_centered_alpha_func,
+        "use_log_space" : False,
         "file_location" : "shawn/", 
         "label" : "Velocity", 
-        "sigma_clip" : 6, 
-        "interpolation" : "nearest"
+        "sigma_clip" : 4, 
+        "interpolation" : "bilinear"
     },
     {
         "field" : ("gas", "total_density"),
-        "bounds" : [("percentile", 5), ("percentile", 100)],
-        "use_grey_opacity" : False, 
+        "bounds" : [("value", 1e-28), ("max", None)],
+        "use_grey_opacity" : True, 
         "use_ghost_zones" : False, 
         "colormap" : "turbo",
+        "alpha_function" : slanted_alpha_func,
         "use_log_space" : True,
         "file_location" : "shawn/", 
         "label" : "Total_Density", 
-        "sigma_clip" : 6, 
-        "interpolation" : "nearest"
+        "sigma_clip" : 5, 
+        "interpolation" : "bilinear"
     }
 ]
 
-
-"""
-    bounds_density = (4.13e-29, 4.17e-26)
-    #bounds_temp = (2.44e7, 4.50e8) ### EXTREMA
-    bounds_temp = (2.44e7, 2.6e8) ######### NOT EXTREMA, but its better ####################################################################################
-    #bounds_velocity = (9.81e4, 2.43e8) ### EXTREMA
-    bounds_velocity = (1e7, 2.43e8) #### NOT EXTREMA
-    bounds_total_density = (4.13e-29, 3.80e-24)
-"""
 
 # Dictionary of the default parameters
 DEFAULT_PARAMETERS = {
@@ -120,6 +142,12 @@ def define_velocity_fields():
     yt.add_field(("gamer", "velocity_magnitude"), function=_velocity_magnitude, units="cm/s", sampling_type="cell", force_override=True)
 
 
+def signed_velocity_magnitude(field, data):
+    sign = np.sign(data[("gas", "velocity_x")])  # Source of sign
+    magnitude = data[("gas", "velocity_magnitude")]  # Precomputed field
+    return sign * magnitude
+
+
 # Sets up the source
 def setup_source_properties(
     source: VolumeSource, 
@@ -128,6 +156,7 @@ def setup_source_properties(
     use_grey_opacity: bool = False, 
     use_ghost_zones: bool = False, 
     colormap: str = None,
+    alpha_function = flat_alpha_func,
     use_log_space: bool = True
 ):
     
@@ -145,19 +174,12 @@ def setup_source_properties(
     if colormap:
         tf = yt.ColorTransferFunction(bounds)
 
-        # Maps data values to alpha (opacity) values.
-        # This function creates a linear ramp for opacity.
-        def alpha_func(vals, min_val, max_val):
-            # Linearly map values from their range [min_val, max_val]
-            # to a new range of [0.0 (transparent), 1.0 (opaque)]
-            return (vals - min_val) / (max_val - min_val)
-
         # Uses map_to_colormap to apply the colormap and opacity scale
         tf.map_to_colormap(
             bounds[0],
             bounds[1],
             colormap=colormap,
-            scale_func=alpha_func
+            scale_func=alpha_function
         )
 
         source.tfh.tf = tf
@@ -183,10 +205,9 @@ def save_and_show_img(
 
     render_img = mpimg.imread(file_location)
     plt.subplot(*subplot_cords)
-    plt.imshow(render_img, interpolation=interpolation) # bilinear makes it smoother
+    plt.imshow(render_img, interpolation=interpolation) # "bilinear" makes it smoother, "nearest" has no smoothing
     plt.title(title)
     plt.axis('off')
-
 
 
 # Loads in and volume renders galaxy data, then volume renders them
@@ -203,7 +224,8 @@ def main(
 
     # Define velocity fields
     define_velocity_fields()
-
+    ds.add_field(("gamer", "signed_velocity"), function=signed_velocity_magnitude, units="cm/s", sampling_type="cell")
+    
     # Gets CoM from particles (DM and stars) 
     center = find_CoM(dataset = ds)
 
@@ -218,13 +240,7 @@ def main(
 
     plt.figure(figsize=(10, 5))
 
-    fields = []
-    for params in field_list:
-        fields.append(params["field"])
-
-    print(fields)
-
-    sc = yt.create_scene(sp, field=fields, lens_type="perspective")
+    sc = yt.create_scene(sp, field=None, lens_type="perspective")
     source = sc[0]
 
     # Set the camera to look at the region of interest
@@ -236,8 +252,15 @@ def main(
     for i, field_params in enumerate(field_list):
         bounds = []
         for value in field_params["bounds"]:
-            if value[0] == "percentile":
+            if value[0] == "min":
+                bounds.append(ds.find_min(field_params["field"])[0].to_value())
+
+            elif value[0] == "max":
+                bounds.append(ds.find_max(field_params["field"])[0].to_value())
+
+            elif value[0] == "percentile":
                 bounds.append(np.percentile(sp[field_params["field"]], [value[1]])[0].to_value())
+
             elif value[0] == "value":
                 bounds.append(value[1])
         print(bounds)
@@ -249,6 +272,7 @@ def main(
             use_grey_opacity = field_params["use_grey_opacity"], 
             use_ghost_zones = field_params["use_ghost_zones"], 
             colormap = field_params["colormap"],
+            alpha_function = field_params["alpha_function"],
             use_log_space = field_params["use_log_space"]
         )
 
@@ -278,5 +302,5 @@ def main(
 
 
 if __name__ == "__main__":
-        main(sphere_radius= 2.5, subplot_cords = (3, 4), resolution= 128)
+        main(sphere_radius= 3, subplot_cords = (3, 4), resolution= 128)
         #main()
