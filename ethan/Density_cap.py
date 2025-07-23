@@ -102,8 +102,8 @@ def main(data: str = DEFAULT_PARAMETERS['data_location'], sphere_radius: float =
 
     # --- Visualization ---
     plt.figure(figsize=(10, 5))
-    save_and_show_img(user_prefix + "dens_tf_capped_data.png", 0, (1, 2, 1), "Capped Density TF", is_transfer_function=True, p_field=capped_density_field, source=source)
-    save_and_show_img(user_prefix + "dens_render_capped_data.png", 4.0, (1, 2, 2), "Capped Density Render", is_transfer_function=False, scene=sc)
+    save_and_show_img(user_prefix + "dens_tf_capped_data.pdf", 0, (1, 2, 1), "Capped Density TF", is_transfer_function=True, p_field=capped_density_field, source=source)
+    save_and_show_img(user_prefix + "dens_render_capped_data.pdf", 4.0, (1, 2, 2), "Capped Density Render", is_transfer_function=False, scene=sc)
 
     plt.tight_layout()
     plt.show()
