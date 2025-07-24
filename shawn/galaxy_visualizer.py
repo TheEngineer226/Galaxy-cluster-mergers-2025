@@ -8,6 +8,7 @@ from unyt import unyt_array
 import numpy as np
 import cmasher as cmr
 from unyt import unyt_array
+<<<<<<< Updated upstream
 import pyxsim, subprocess
 import numpy as np
 #import astropy.units as u
@@ -49,8 +50,40 @@ def inverted_centered_alpha_func(vals, min_val, max_val):
 
 def alpha_zero_at_zero(vals, min_val, max_val):
     return np.clip(np.abs(vals) / max(abs(min_val), abs(max_val)), 0.0, 1.0)
+=======
+>>>>>>> Stashed changes
 
 
+# Maps data values to alpha (opacity) values.
+# This function creates a linear ramp for opacity.
+def rising_alpha_func(vals, min_val, max_val):
+    # Linearly map values from their range [min_val, max_val]
+    # to a new range of [0.0 (transparent), 1.0 (opaque)]
+    return (vals - min_val) / (max_val - min_val)
+
+def falling_alpha_func(vals, min_val, max_val):
+    # Linearly map values from their range [min_val, max_val]
+    # to a new range of [0.0 (transparent), 1.0 (opaque)]
+    return 1 - (vals - min_val) / (max_val - min_val)
+
+def flat_alpha_func(vals, min_val, max_val, alpha=1.0):
+    # Returns a constant alpha value for all inputs
+    return np.full_like(vals, fill_value=alpha, dtype=float)
+
+def centered_alpha_func(vals, min_val, max_val):
+    mid = 0.5 * (min_val + max_val)
+    half_range = 0.5 * (max_val - min_val)
+    return 1.0 - np.abs(vals - mid) / half_range
+
+def inverted_centered_alpha_func(vals, min_val, max_val):
+    mid = 0.5 * (min_val + max_val)
+    half_range = 0.5 * (max_val - min_val)
+    return np.abs(vals - mid) / half_range
+
+def alpha_zero_at_zero(vals, min_val, max_val):
+    return np.clip(np.abs(vals) / max(abs(min_val), abs(max_val)), 0.0, 1.0)
+
+"""
 # The parameters pass for each field
 field_parameters = [
     {
@@ -106,6 +139,29 @@ field_parameters = [
         "label" : "Total_Density", 
         "sigma_clip" : 5, 
         "interpolation" : "bilinear"
+<<<<<<< Updated upstream
+=======
+    }
+]
+"""
+
+
+field_parameters = [
+    {
+        "field" : ("gas", "density"),
+        # Use "percentile" to get a percentile and "value" when you want to direct put in a value for the bound. 
+        # "min" gives you the smallest number and "max" gives you the biggest(smallest, largest)
+        "bounds" : [("value", 5e-29), ("max", None)], 
+        "use_grey_opacity" : True, # Make underdense regions appear opaque
+        "use_ghost_zones" : False, # Uses interpolated data around grid boundaries to smooth out visual artifacts. But will come at the cost of performance
+        "colormap" : "turbo", 
+        "alpha_function" : rising_alpha_func,
+        "use_log_space" : True, 
+        "file_location" : "shawn/", # The path to the folder you want the file to be saved at
+        "label" : "Density", 
+        "sigma_clip" : 5, # Removing values that are more than N standard deviations brighter than the mean of your image. Typically, a choice of 4 to 6.
+        "interpolation" : "bilinear" # "nearest" has no smoothing, "billinear" makes it smoother
+>>>>>>> Stashed changes
     }
 ]
 
@@ -158,6 +214,7 @@ def define_velocity_fields():
     yt.add_field(("gamer", "velocity_magnitude"), function=_velocity_magnitude, units="cm/s", sampling_type="cell", force_override=True)
 
 
+<<<<<<< Updated upstream
 def define_dark_matter_velocity_fields(all_data, L, N, c):
     # configure orientation of observer
     orient = Orientation(L, north_vector=N)
@@ -191,6 +248,8 @@ def define_dark_matter_velocity_fields(all_data, L, N, c):
              force_override=True)
 
 
+=======
+>>>>>>> Stashed changes
 def signed_velocity_magnitude(field, data):
     sign = np.sign(data[("gas", "velocity_x")])  # Source of sign
     magnitude = data[("gas", "velocity_magnitude")]  # Precomputed field
@@ -281,7 +340,13 @@ def main(
     # Define velocity fields
     define_velocity_fields()
     ds.add_field(("gamer", "signed_velocity"), function=signed_velocity_magnitude, units="cm/s", sampling_type="cell")
+<<<<<<< Updated upstream
     #define_dark_matter_velocity_fields(ad, L, N, center)
+=======
+    
+    # Gets CoM from particles (DM and stars) 
+    center = find_CoM(dataset = ds)
+>>>>>>> Stashed changes
 
     # Look at gas/particles within a sphere (not full simulation domain) 
     radius = (sphere_radius, sphere_radius_units)
@@ -292,6 +357,12 @@ def main(
     #total_density_in_sphere = sp[('gas', 'total_density')]  # Will probably be used in the future but not sure just yet
     #temperature_in_sphere = sp[('gas', 'temperature')]  # Same as above
 
+<<<<<<< Updated upstream
+=======
+    L = np.asarray([0.94, -0.10, 0.31]) / np.linalg.norm(np.asarray([0.94, -0.10, 0.31]))
+    N = np.array([L[1], -L[0], 0])
+
+>>>>>>> Stashed changes
     #sc = yt.create_scene(sp, field=None, lens_type="perspective")
     sc = yt.create_scene(sp, field=None, lens_type="plane-parallel")
     source = sc[0]
@@ -299,6 +370,10 @@ def main(
     # Set the camera to look at the region of interest
     cam = sc.camera
     cam.position = L
+<<<<<<< Updated upstream
+=======
+    cam.set_focus(center)
+>>>>>>> Stashed changes
     cam.north_vector = N
     cam.resolution = (resolution, resolution) # can lower resolution to 128 to prioritize faster rendering. 512 is the standard quality
     
