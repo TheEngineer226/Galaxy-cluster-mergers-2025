@@ -10,7 +10,7 @@ from yt.visualization.volume_rendering.transfer_functions import ColorTransferFu
 
 # --- Default Parameters ---
 DEFAULT_PARAMETERS = {
-     "data_location" : "sims_data/R1.5_v2400_b250/Data_000000",
+     "data_location" : "sims_data/R1.5_v2400_b250/Data_000044",
      "sphere_radius" :  4,
      "sphere_radius_units" : "Mpc",
      }
@@ -83,11 +83,9 @@ def main(data: str, sphere_radius: float, sphere_radius_units: str):
     mvtf.link_channels(table_id=0, channels=[3])
 
     # 6. Create a scene with a LIST of the two fields we need.
-    # The order MUST match the field_id's above.
+    # The order must match the field_id's above.
     fields_to_render = [color_field, opacity_field]
     sc = yt.create_scene(sp, fields_to_render)
-    
-    # 7. Use the direct shortcut to get the source.
     source = sc[0]
     
     # 8. Assign our custom MVTF to the transfer function helper.
@@ -103,7 +101,7 @@ def main(data: str, sphere_radius: float, sphere_radius_units: str):
     sc.save(output_filename, sigma_clip=4.0)
     print("Render complete!")
     
-    # --- Display Result ---
+    # Display Result 
     image_array = sc.render()
     plt.figure(figsize=(8,8))
     plt.imshow(image_array)
