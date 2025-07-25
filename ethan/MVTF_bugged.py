@@ -40,7 +40,6 @@ def main(data: str, sphere_radius: float, sphere_radius_units: str):
     ds = yt.load(data)
     if color_field not in ds.field_list:
         def _temperature(field, data):
-            # A common proxy for temperature is Energy / Density
             return data[('gamer', 'Engy')] / data[('gamer', 'Dens')]
         ds.add_field(name=color_field, sampling_type="cell", function=_temperature, units="K")
 
@@ -59,7 +58,7 @@ def main(data: str, sphere_radius: float, sphere_radius_units: str):
     
     # 1. Create a transfer function for COLOR, based on Temperature.
     tf_color = ColorTransferFunction(log_temp_bounds)
-    tf_color.add_layers(10, colormap="gray", w=0.5)
+    tf_color.add_layers(10, colormap="gray", w=0.5) #Changing the colormap does not affect the render
 
     # 2. Create a separate, simple transfer function for OPACITY, based on Density.
     tf_opacity = TransferFunction(log_dens_bounds)
