@@ -83,10 +83,8 @@ def main(data: str = DEFAULT_PARAMETERS['data_location'], sphere_radius: float =
     c = find_CoM(dataset=ds)
     radius = ds.quan(sphere_radius, sphere_radius_units)
     sp = ds.sphere(c, radius)
-
-    # --- FIX: Correctly find the non-zero minimum velocity ---
-    # The .min() shortcut doesn't accept 'non_zero'. We get the data array
-    # and filter it manually for a more robust calculation.
+    
+    # Correctly find the non-zero minimum velocity
     max_shock_vel = sp.max(shock_velocity_field)
     
     all_shock_vels = sp[shock_velocity_field]
@@ -106,14 +104,28 @@ def main(data: str = DEFAULT_PARAMETERS['data_location'], sphere_radius: float =
     # --- 3. Rendering Workflow ---
     sc = yt.create_scene(sp, field=shock_velocity_field, lens_type='perspective')
     source = sc[0]
+    # This sets the data scaling to be logarithmic
     source.set_log(True)
 
-    # Setup the color transfer function
+    # --- CHANGE: Use the user's successful method for the transfer function ---
+    # 3a. Create a ColorTransferFunction object in log space
     tf = yt.ColorTransferFunction(log_vel_bounds)
-    tf.map_to_colormap(log_vel_bounds[0], log_vel_bounds[1], colormap="magma")
-    source.tfh.tf = tf
+
+    # 3b. Define a function that maps data values to alpha (opacity) values.
+    # This creates a linear ramp for opacity from 0.0 to 1.0.
+    def alpha_func(vals, min_val, max_val):
+        return (vals - min_val) / (max_val - min_val)
+
+    # 3c. Use map_to_colormap with our custom alpha function
+    tf.map_to_colormap(
+        log_vel_bounds[0],
+        log_vel_bounds[1],
+        colormap="magma",
+        scale_func=alpha_func
+    )
     
-    # Set the bounds to the actual non-zero data range
+    # 3d. Assign the custom transfer function and bounds to the scene
+    source.tfh.tf = tf
     if max_shock_vel > 0 and min_shock_vel_nonzero > 0:
         source.tfh.bounds = (min_shock_vel_nonzero.v, max_shock_vel.v)
     else:
