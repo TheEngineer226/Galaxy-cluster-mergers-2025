@@ -1,7 +1,6 @@
 3D Volume Rendering of Galaxy Cluster Mergers
 
-This project contains a suite of Python scripts for generating scientific visualizations of galaxy cluster merger simulations using the yt analysis toolkit. 
-The primary focus is on visualizing shock fronts and gas kinematics from hydrodynamical simulation data of the MACS J0018.5+1626 cluster.
+This project contains a suite of Python scripts for generating scientific visualizations of galaxy cluster merger simulations using the yt analysis toolkit. The primary focus is on visualizing shock fronts and gas kinematics from hydrodynamical simulation data of the MACS J0018.5+1626 cluster.
 
 Features:
 
