@@ -444,7 +444,7 @@ def main(
 
     # Save plots and saves the plots as PDF
     save_and_prep_transfer_function(save_location = tf_file, subplot_cords = (1, 2, 1), title = "Shock Velocity TF", p_field = shock_velocity_field, source = source, save_as_png=is_animation)
-    save_and_prep_render(save_location = render_file, subplot_cords = (1, 2, 2), title = "Shock Velocity Map (>12 keV)", contrast = contrast, scene=sc, colormap = colormap, bounds = linear_bounds, save_as_png=is_animation)
+    save_and_prep_render(save_location = render_file, subplot_cords = (1, 2, 2), title = "Shock Velocity Map (>10 keV)", contrast = contrast, scene=sc, colormap = colormap, bounds = linear_bounds, save_as_png=is_animation)
 
     plt.tight_layout()
     if not is_animation:
