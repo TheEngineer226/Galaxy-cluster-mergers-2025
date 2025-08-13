@@ -2,11 +2,14 @@
 Volume Rendering of Shock Velocities using yt
 ----------------------------------------------
 This script generates 3D volume renderings of shock velocity fields
-from simulation datasets. It can produce a single render or an animation.
+from simulation datasets. It can produce either a single render or 
+a sequence of frames for an animation (the movie itself is not created 
+by this script).
 
 Key features:
 - Customizable camera position, colormap, and rendering parameters
-- Optional animation with step control (e.g., render every 2 frames)
+- Optional frame-by-frame output for animation, with step control 
+  (e.g., render every 2 frames)
 - Transfer function visualization
 """
 
